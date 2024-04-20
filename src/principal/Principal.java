@@ -31,9 +31,14 @@ public class Principal {
             {
                 case "a":
                     //búsqueda por título
-                    //TODO: validar que se ingrese al menos un caracter valido
                     System.out.println("Ingrese título o parte del título");
                     String busquedaTitulo = scanner.nextLine();
+                    if(busquedaTitulo.equals(""))
+                    {
+                        System.out.println("Ingrese al menos una letra");
+                        System.out.println("Volviendo al menú principal");
+                        break;
+                    }
 
                     String jsonString = peli.buscaPeliculaPorTitulo(busquedaTitulo);
 
@@ -58,7 +63,13 @@ public class Principal {
                         System.out.println("Episodio: " + episodio + ": " + titulo + ", de " + fecha);
                     }
                     System.out.println("Ingrese el numero de episodio para confirmar la búsqueda");
+                    System.out.println("O ingrese x para volver atrás");
                     String eleccion = scanner.nextLine();
+                    //encerrar en un bloque while para repetir mientras no se ingrese un numero valido entre 1 y 6
+                    if (eleccion.equals("x"))
+                    {
+                        break;
+                    }
                     //validar que sea un numero
                     Integer numeroParaBusqueda;
                     int numero = Integer.parseInt(eleccion);
