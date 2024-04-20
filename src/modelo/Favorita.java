@@ -35,7 +35,7 @@ public class Favorita {
             if(peli.getEpisodio()== item.getEpisodio())
             {
                 System.out.println(peli.getTitulo() + " ya está en la lista");
-                return; //necesito más que el break.
+                return;
             }
         }
         listaFavoritas.add(peli);
