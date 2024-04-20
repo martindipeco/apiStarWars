@@ -1,5 +1,13 @@
 package modelo;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+
+import java.io.IOException;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 
@@ -36,6 +44,8 @@ public class Pelicula {
         this.fechaEstreno = LocalDate.parse(peliculaSwapi.release_date(), DateTimeFormatter.ISO_LOCAL_DATE);
     }
 
+    public Pelicula(){}
+
     public String getTitulo() {
         return titulo;
     }
@@ -56,6 +66,43 @@ public class Pelicula {
         return fechaEstreno;
     }
 
+
+    public String buscaPeliculaPorTitulo(String busqueda)
+    {
+        URI direccion = URI.create("https://swapi.dev/api/films/?search="+busqueda);
+        HttpClient client = HttpClient.newHttpClient();
+        HttpRequest request = HttpRequest.newBuilder().uri(direccion).build();
+        HttpResponse<String> response = null;
+        try
+        {
+            response = client.send(request, HttpResponse.BodyHandlers.ofString());
+        }
+        catch (IOException | InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+        String json = response.body();
+        return json;
+    }
+
+    public Pelicula buscaPeliculaPorIndice(int indice)
+    {
+        URI direccion = URI.create("https://swapi.dev/api/films/"+indice); //transforma int a string por operador "+"
+        HttpClient client = HttpClient.newHttpClient();
+        HttpRequest request = HttpRequest.newBuilder().uri(direccion).build();
+        HttpResponse<String> response = null;
+        try
+        {
+            response = client.send(request, HttpResponse.BodyHandlers.ofString());
+        }
+        catch (IOException | InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+        String json = response.body();
+        Gson gson = new GsonBuilder().create();
+        PeliculaSwapi miPeliculaSwapi = gson.fromJson(json, PeliculaSwapi.class);
+        Pelicula miPelicula = new Pelicula(miPeliculaSwapi);
+        return miPelicula;
+    }
     @Override
     public String toString() {
         return "{ Pelicula: " +

@@ -1,7 +1,6 @@
 package principal;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
+import com.google.gson.*;
 import modelo.Favorita;
 import modelo.Pelicula;
 import modelo.PeliculaSwapi;
@@ -17,9 +16,10 @@ public class Principal {
 
     public static void main (String[] args) throws InterruptedException, IOException
     {
-        System.out.println("Zona de obras: Api Star Wars");
         Scanner scanner = new Scanner(System.in);
-        System.out.println("Bienvenido a SWAPI :)");
+        Favorita fav = new Favorita();
+        Pelicula peli = new Pelicula();
+        System.out.println("Bienvenido a las consultas de películas de Star Wars :)");
         System.out.println("Ingrese la opción deseada");
         String opcion;
         do
@@ -42,54 +42,52 @@ public class Principal {
             {
                 case "a":
                     //búsqueda por título
-                    System.out.println("buscando por título");
                     //TODO: validar que se ingrese al menos un caracter valido
-                    System.out.println("Ingrese título en inglés");
+                    System.out.println("Ingrese título o parte del título");
                     String busquedaTitulo = scanner.nextLine();
-                    String direccionTitulo = "https://swapi.dev/api/films/?search="+busquedaTitulo;
-                    try
-                    {
-                        //TODO: crear clases separadas para client, request, response
-                        HttpClient client = HttpClient.newHttpClient();
-                        HttpRequest request = HttpRequest.newBuilder()
-                                .uri(URI.create(direccionTitulo))
-                                .build();
-                        HttpResponse<String> response = client
-                                .send(request, HttpResponse.BodyHandlers.ofString());
 
-                        String json = response.body();
-                        System.out.println(json);
+                    String jsonString = peli.buscaPeliculaPorTitulo(busquedaTitulo);
 
-                        //Gson gson = new GsonBuilder().setFieldNamingPolicy(FieldNamingPolicy.UPPER_CAMEL_CASE).create();
+                    //to access values from the JSON -> parse String to Json
+                    JsonObject jsonObject = JsonParser.parseString(jsonString).getAsJsonObject();
 
-                        Gson gson = new GsonBuilder().create();
+                    JsonArray resultsArray = jsonObject.getAsJsonArray("results");
+                    int numeroDeResultados = jsonObject.get("count").getAsInt();
 
-                        //Convertir via record class
-                        //TODO: se crea un objeto con todos los campos null
-                        PeliculaSwapi miPeliculaSwapi = gson.fromJson(json, PeliculaSwapi.class);
-                        System.out.println(miPeliculaSwapi);
-
-                        Pelicula miPelicula = new Pelicula(miPeliculaSwapi);
-                        System.out.println(miPelicula);
-                        System.out.println("¿Desea guardarla en Favoritas?(s/n)");
-                        String porSioPorNo = scanner.nextLine();
-                        if(porSioPorNo.equals("s"))
-                        {
-                            Favorita fav = new Favorita();
-                            fav.agregarAFavortitas(miPelicula);
-                            System.out.println("Guardada en Favoritas");
-                        }
-
+                    if (numeroDeResultados == 0) {
+                        System.out.println("No se obtuvieron resultados con ese título");
+                        break;
+                    } else if (numeroDeResultados == 1) {
+                        System.out.println("Se encontró un resultado");
+                    } else {
+                        System.out.println("Se obtuvieron " + numeroDeResultados + " resultados:");
                     }
-                    catch (NumberFormatException e)
-                    {
-                        System.out.println("Ocurrió error con números");
-                        System.out.println(e.getMessage());
+                    for (JsonElement element : resultsArray) {
+                        int episodio = element.getAsJsonObject().get("episode_id").getAsInt();
+                        String titulo = element.getAsJsonObject().get("title").getAsString();
+                        String fecha = element.getAsJsonObject().get("release_date").getAsString().substring(0, 4);
+                        System.out.println("Episodio: " + episodio + ": " + titulo + ", de " + fecha);
                     }
-                    catch (IllegalArgumentException e)
-                    {
-                        System.out.println("Ocurrió un error de argumentos");
-                        System.out.println(e.getMessage());
+                    System.out.println("Ingrese el numero de episodio para confirmar la búsqueda");
+                    String eleccion = scanner.nextLine();
+                    //validar que sea un numero
+                    Integer numeroParaBusqueda;
+                    int numero = Integer.parseInt(eleccion);
+                    //peliculas estan ordenadas por fecha de estreno, no por numero de episodio
+                    //la numero 1 es el episodio 4
+                    if (numero > 3) {
+                        numeroParaBusqueda = numero - 3;
+                    } else {
+                        numeroParaBusqueda = numero + 3;
+                    }
+                    Pelicula miPeliculaBloqueA = peli.buscaPeliculaPorIndice(numeroParaBusqueda);
+
+                    System.out.println(miPeliculaBloqueA);
+                    System.out.println("¿Desea guardarla en Favoritas?(s/n)");
+                    String porSioPorNo = scanner.nextLine();
+                    if (porSioPorNo.equals("s")) {
+                        fav.agregarAFavortitas(miPeliculaBloqueA);
+                        System.out.println("Guardada en Favoritas");
                     }
                     //catch (ErrorNAException e)
                     //{
@@ -120,58 +118,20 @@ public class Principal {
                             break;
                         }
 
-                        String direccion = "https://swapi.dev/api/films/"+seleccion;
+                        int numeroBusqueda = Integer.parseInt(seleccion);
+                        Pelicula miPeliculaBloqueB = peli.buscaPeliculaPorIndice(numeroBusqueda);
 
                         //la llave "count" tiene valor la cantidad de episodios disponibles
                         //ordenados por fecha ascendente. x ej; https://swapi.dev/api/films/1 es la primer pelicula de 1977, episodio 4
-                        //TODO: opcion de hacer Loop por los 6 episodios disponibles
-                        try
+
+                        System.out.println(miPeliculaBloqueB);
+                        System.out.println("¿Desea guardarla en Favoritas?(s/n)");
+                        String porSoN = scanner.nextLine();
+                        if(porSoN.equals("s"))
                         {
-                            //TODO: crear clases separadas para client, request, response
-                            HttpClient client = HttpClient.newHttpClient();
-                            HttpRequest request = HttpRequest.newBuilder()
-                                    .uri(URI.create(direccion))
-                                    .build();
-                            HttpResponse<String> response = client
-                                    .send(request, HttpResponse.BodyHandlers.ofString());
-
-                            String json = response.body();
-                            System.out.println(json);
-
-                            //Gson gson = new GsonBuilder().setFieldNamingPolicy(FieldNamingPolicy.UPPER_CAMEL_CASE).create();
-
-                            Gson gson = new GsonBuilder().create();
-
-                            //Convertir via record class
-                            PeliculaSwapi miPeliculaSwapi = gson.fromJson(json, PeliculaSwapi.class);
-                            System.out.println(miPeliculaSwapi);
-
-                            Pelicula miPelicula = new Pelicula(miPeliculaSwapi);
-                            System.out.println(miPelicula);
-                            System.out.println("¿Desea guardarla en Favoritas?(s/n)");
-                            String porSioPorNo = scanner.nextLine();
-                            if(porSioPorNo.equals("s"))
-                            {
-                                Favorita fav = new Favorita();
-                                fav.agregarAFavortitas(miPelicula);
-                                System.out.println("Guardada en Favoritas");
-                            }
-
+                            fav.agregarAFavortitas(miPeliculaBloqueB);
+                            System.out.println("Guardada en Favoritas");
                         }
-                        catch (NumberFormatException e)
-                        {
-                            System.out.println("Ocurrió error con números");
-                            System.out.println(e.getMessage());
-                        }
-                        catch (IllegalArgumentException e)
-                        {
-                            System.out.println("Ocurrió un error de argumentos");
-                            System.out.println(e.getMessage());
-                        }
-                        //catch (ErrorNAException e)
-                        //{
-                        //    System.out.println(e.getMessage());
-                        //}
                     }
                     while (!"x".equals(seleccion));
                     break;
@@ -181,14 +141,12 @@ public class Principal {
                     //historial de compras();
                     do {
                         //cuenta.mostrarHistorial();
-                        System.out.println("acá se muestra el historial");
-                        Favorita fav = new Favorita();
                         fav.mostrarLista();
 
-                        System.out.println("\na: Ordena por nombre de producto A-Z");
-                        System.out.println("b: Ordena por nombre de producto Z-A");
-                        System.out.println("c: Ordena por precio menor a mayor");
-                        System.out.println("d: Ordena por precio mayor a menor");
+                        System.out.println("\na: Ordena por Título A-Z");
+                        System.out.println("b: Ordena por Título Z-A");
+                        System.out.println("c: Ordena por Episodio ascendente");
+                        System.out.println("d: Ordena por Episodio descendente");
                         System.out.println("e: Ordena por fecha más lejana");
                         System.out.println("f: Ordena por fecha más próxima");
                         System.out.println("x: Volver atrás");
@@ -200,26 +158,26 @@ public class Principal {
                         {
                             case "a":
                                 System.out.println("ordenada por nombre");
-                                //cuenta.ordenaPorNombre();
+                                fav.ordenaPorNombre();
                                 break;
                             case "b":
                                 System.out.println("ordenada por nombre descendente");
-                                //cuenta.ordenaPorNombreDescendente();
+                                fav.ordenaPorNombreDescendente();
                                 break;
                             case "c":
-                                //cuenta.ordenaPorMonto();
+                                fav.ordenaPorEpisodio();
                                 System.out.println("ordenada por monto");
                                 break;
                             case "d":
-                                //cuenta.ordenaPorMontoDescendente();
+                                fav.ordenaPorEpisodioDescendente();
                                 System.out.println("ordenada por monto descendente");
                                 break;
                             case "e":
-                                //cuenta.ordenaPorFecha();
+                                fav.ordenaPorFecha();
                                 System.out.println("ordenada por fecha");
                                 break;
                             case "f":
-                                //cuenta.ordenaPorFechaDescendente();
+                                fav.ordenaPorFechaDescendente();
                                 System.out.println("ordenada por fecha descendente");
                                 break;
                             case "x":

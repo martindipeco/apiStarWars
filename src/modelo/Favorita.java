@@ -47,9 +47,19 @@ public class Favorita {
         listaFavoritas.sort(Comparator.comparing(Pelicula::getTitulo));
     }
 
+    public void ordenaPorNombreDescendente()
+    {
+        listaFavoritas.sort(Comparator.comparing(Pelicula::getTitulo).reversed());
+    }
+
     public void ordenaPorEpisodio()
     {
         listaFavoritas.sort(Comparator.comparing(Pelicula::getEpisodio));
+    }
+
+    public void ordenaPorEpisodioDescendente()
+    {
+        listaFavoritas.sort(Comparator.comparing(Pelicula::getEpisodio).reversed());
     }
 
     public void ordenaPorFecha()
