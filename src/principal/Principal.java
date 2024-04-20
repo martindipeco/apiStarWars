@@ -5,6 +5,8 @@ import modelo.Favorita;
 import modelo.GeneradorDeArchivo;
 import modelo.Pelicula;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Scanner;
 
 public class Principal {
@@ -56,21 +58,27 @@ public class Principal {
                     } else {
                         System.out.println("Se obtuvieron " + numeroDeResultados + " resultados:");
                     }
+                    List<String> listaPosibles = new ArrayList<>();
                     for (JsonElement element : resultsArray) {
-                        int episodio = element.getAsJsonObject().get("episode_id").getAsInt();
+                        String episodio = element.getAsJsonObject().get("episode_id").getAsString();
+                        listaPosibles.add(episodio);
                         String titulo = element.getAsJsonObject().get("title").getAsString();
                         String fecha = element.getAsJsonObject().get("release_date").getAsString().substring(0, 4);
                         System.out.println("Episodio: " + episodio + ": " + titulo + ", de " + fecha);
                     }
-                    System.out.println("Ingrese el numero de episodio para confirmar la búsqueda");
-                    System.out.println("O ingrese x para volver atrás");
-                    String eleccion = scanner.nextLine();
-                    //encerrar en un bloque while para repetir mientras no se ingrese un numero valido entre 1 y 6
+                    String eleccion;
+                    //validar que sea un numero posible
+                    do {
+                        System.out.println("Ingrese el numero de episodio para confirmar la búsqueda");
+                        System.out.println("O ingrese x para volver atrás");
+                        eleccion = scanner.nextLine();
+
+                    }
+                    while (!listaPosibles.contains(eleccion) && !eleccion.equals("x"));
                     if (eleccion.equals("x"))
                     {
                         break;
                     }
-                    //validar que sea un numero
                     Integer numeroParaBusqueda;
                     int numero = Integer.parseInt(eleccion);
                     //peliculas están ordenadas por fecha de estreno, no por número de episodio
@@ -96,9 +104,10 @@ public class Principal {
                     //}
                     break;
                 case "b":
-                    String seleccion;
+                    String confirmacion;
                     do {
                         //el num de peli está organizada cronológicamente en la base de datos por fecha de lanzamiento, no por episode_id
+                        //FALTA: transformar menu hardcodeado en dinámico
                         System.out.println("Películas disponibles");
                         System.out.println("Ingrese el número correspondiente para confirmar búsqueda");
 
@@ -110,15 +119,28 @@ public class Principal {
                         System.out.println("6: Revenge of the Sith - 2005");
                         System.out.println("x: Volver atrás");
 
-                        //TODO: chequear que la selección sea un número entre 1 a 6
-                        seleccion = scanner.nextLine();
-                        if (seleccion.equals("x"))
+                        confirmacion = scanner.nextLine();
+
+                        //FALTA: transformar el loop hardcodeado en dinámico
+                        List<String> listaPosiblesB = new ArrayList<>();
+                        for (int i = 1; i <= 6; i++) {
+                            listaPosiblesB.add(String.valueOf(i));
+                        }
+                        //validar que sea un numero posible
+                        do {
+                            System.out.println("Ingrese el numero de episodio para confirmar la búsqueda");
+                            System.out.println("O ingrese 0 para volver atrás");
+                            confirmacion = scanner.nextLine();
+
+                        }
+                        while (!listaPosiblesB.contains(confirmacion) && !confirmacion.equals("x"));
+
+                        if (confirmacion.equals("0"))
                         {
                             break;
                         }
 
-                        int numeroBusqueda = Integer.parseInt(seleccion);
-                        //miPeliculaBloqueB
+                        int numeroBusqueda = Integer.parseInt(confirmacion);
                         peli = peli.buscaPeliculaPorIndice(numeroBusqueda);
 
                         //la llave "count" tiene valor la cantidad de episodios disponibles
@@ -134,7 +156,7 @@ public class Principal {
                             System.out.println("Guardada en Favoritas");
                         }
                     }
-                    while (!"x".equals(seleccion));
+                    while (!"x".equals(confirmacion));
                     break;
 
                 case "c":
