@@ -2,6 +2,7 @@ package modelo;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import excepcion.ExcepcionNA;
 
 import java.io.IOException;
 import java.net.URI;
@@ -31,16 +32,27 @@ public class Pelicula {
     {
         if (peliculaSwapi.title().contains("N/A"))
         {
-            //TODO crear excepcion propia - ver cuentas ordenadas
-            //throw new ErrorNAException("No se pudo convertir por que apareció N/A en Título");
-            System.out.println("Hubo un error");
+            //excepcion propia
+            throw new ExcepcionNA("No se pudo convertir por que apareció N/A en Título");
         }
         this.titulo = peliculaSwapi.title();
+        //FALTA: manejar error de falta de datos en episodio
         this.episodio = Integer.valueOf(peliculaSwapi.episode_id());
+        if (peliculaSwapi.director().contains("N/A"))
+        {
+            //excepcion propia
+            throw new ExcepcionNA("No se pudo convertir por que apareció N/A en Título");
+        }
         this.director = peliculaSwapi.director();
+        if (peliculaSwapi.producer().contains("N/A"))
+        {
+            //excepcion propia
+            throw new ExcepcionNA("No se pudo convertir por que apareció N/A en Título");
+        }
         this.productor = peliculaSwapi.producer();
         //swapi documentation: date string is like "2024-04-18" -- ISO 8601 date string
         //DateTimeFormatter.ISO_LOCAL_DATE is a predefined formatter for parsing ISO 8601 date strings
+        //FALTA manejar error por falta de datos en fecha de estreno
         this.fechaEstreno = LocalDate.parse(peliculaSwapi.release_date(), DateTimeFormatter.ISO_LOCAL_DATE);
     }
 
@@ -79,6 +91,10 @@ public class Pelicula {
         }
         catch (IOException | InterruptedException e) {
             throw new RuntimeException(e);
+        }
+        catch (ExcepcionNA e)
+        {
+            System.out.println(e.getMessage());
         }
         String json = response.body();
         return json;

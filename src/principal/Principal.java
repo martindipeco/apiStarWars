@@ -98,49 +98,39 @@ public class Principal {
                         fav.agregarAFavortitas(peli);
                         generador.guardarTxt(peli);
                     }
-                    //catch (ErrorNAException e)
-                    //{
-                    //    System.out.println(e.getMessage());
-                    //}
+
                     break;
                 case "b":
-                    String confirmacion;
+                    String seleccion;
+                    List<String> listaPosiblesB = new ArrayList<>();
                     do {
-                        //el num de peli está organizada cronológicamente en la base de datos por fecha de lanzamiento, no por episode_id
-                        //FALTA: transformar menu hardcodeado en dinámico
-                        System.out.println("Películas disponibles");
+                        System.out.println("\nPelículas disponibles:");
                         System.out.println("Ingrese el número correspondiente para confirmar búsqueda");
+                        System.out.println("o cualquier otra tecla para volver atrás");
 
+                        //FALTA: transformar menu hardcodeado en dinámico
                         System.out.println("\n1: A New Hope - 1977");
                         System.out.println("2: The Empire Strikes Back - 1980");
                         System.out.println("3: Return of the Jedi - 1983");
                         System.out.println("4: The Phantom Menace - 1999");
                         System.out.println("5: Attack of the Clones - 2002");
                         System.out.println("6: Revenge of the Sith - 2005");
-                        System.out.println("x: Volver atrás");
+                        //el num de peli está organizada cronológicamente en la base de datos por fecha de lanzamiento, no por episode_id
 
-                        confirmacion = scanner.nextLine();
+                        seleccion = scanner.nextLine();
 
                         //FALTA: transformar el loop hardcodeado en dinámico
-                        List<String> listaPosiblesB = new ArrayList<>();
+
                         for (int i = 1; i <= 6; i++) {
                             listaPosiblesB.add(String.valueOf(i));
                         }
                         //validar que sea un numero posible
-                        do {
-                            System.out.println("Ingrese el numero de episodio para confirmar la búsqueda");
-                            System.out.println("O ingrese 0 para volver atrás");
-                            confirmacion = scanner.nextLine();
-
-                        }
-                        while (!listaPosiblesB.contains(confirmacion) && !confirmacion.equals("x"));
-
-                        if (confirmacion.equals("0"))
+                        if (!listaPosiblesB.contains(seleccion))
                         {
+                            System.out.println("Volviendo atrás");
                             break;
                         }
-
-                        int numeroBusqueda = Integer.parseInt(confirmacion);
+                        int numeroBusqueda = Integer.parseInt(seleccion);
                         peli = peli.buscaPeliculaPorIndice(numeroBusqueda);
 
                         //la llave "count" tiene valor la cantidad de episodios disponibles
@@ -153,10 +143,9 @@ public class Principal {
                         {
                             fav.agregarAFavortitas(peli);
                             generador.guardarTxt(peli);
-                            System.out.println("Guardada en Favoritas");
                         }
                     }
-                    while (!"x".equals(confirmacion));
+                    while (!"x".equals(seleccion));
                     break;
 
                 case "c":
